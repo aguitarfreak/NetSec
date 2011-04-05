@@ -1,0 +1,2 @@
+action protocol ip1/mask1 port1:port2 -> ip2/mask2 port1:port2 (option1: "test";option2: U+;)
+action2 protocol2 ip12/mask12 port12:port22 -> ip22/mask22 port12:port22 (option12: "test2";option22: U+2;)
