@@ -11,11 +11,11 @@ public class ids {
 	public ids(String rf, String df) throws IOException{
 		rulesParser rp = new rulesParser(rf);
 		
-		//System.out.println(rp.allRules.get(0)[7]);
 	}
 	
 	//network mode
-	public ids(String rf) {
+	public ids(String rf) throws IOException {
+		rulesParser rp = new rulesParser(rf);
 		
 	}
 	
