@@ -1,10 +1,6 @@
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 
 import org.apache.commons.collections.map.MultiValueMap;
 
@@ -14,7 +10,6 @@ public class assembler extends methods {
 	public static ArrayList<Thread> threads = new ArrayList<Thread>();//all working threads, named after the packet ID
 	public static ArrayList<String> working_on = new ArrayList<String>();//all working threads names
 	public static ArrayList<String> complete = new ArrayList<String>();//all working threads names
-	public static ArrayList<String> analyzed = new ArrayList<String>();//all analyzed packets/ threads names
 	
 	public static MultiValueMap fragments_dict = new MultiValueMap( );//fragments mapped to the threads
 	public static HashMap<String, ArrayList<byte[]>>completed_fragments = new HashMap<String, ArrayList<byte[]>>();//completed packet fragments mapped to the ID's
@@ -27,47 +22,13 @@ public class assembler extends methods {
 	public static final int ip_header_length = 20;
 	public static final int arp_header_length = 28;
 	
-	public static boolean network = true;
-	
-	static String rule_filename="";
-	static String data_filename="";
-	static int packet_count = 5;
+	public static boolean network = false;
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		
-		OptionParser parser = new OptionParser() {
-            {
-                accepts( "r" ).withRequiredArg().ofType( String.class )
-                    .describedAs( "rule_filename" );
-                accepts( "i" ).withRequiredArg().ofType( String.class )
-                    .describedAs( "input" );
-                accepts( "c" ).withOptionalArg().ofType( Integer.class )
-                	.describedAs( "packet_count" ).defaultsTo(5);
-                acceptsAll( Arrays.asList( "h", "?" ), "show help" );
-            }
-        };
-
-        OptionSet options = parser.parse( args );
-
-        if ( options.has( "?" ) )
-            parser.printHelpOn( System.out );
-        
-        if ( options.has( "r" ) )
-            rule_filename = (String) options.valueOf("r");
-        
-        if ( options.has( "i" ) ){
-            data_filename = (String) options.valueOf("i");
-            network = false;
-        }
-        
-        if ( options.has( "c" ) ){
-            packet_count = (Integer) options.valueOf("c");
-            
-        }
 		if(network){
-			//new ids(rule_filename);
 			//start network sniffer
-			networkSniffer netSniffer = new networkSniffer(packet_count);
+			networkSniffer netSniffer = new networkSniffer(10000);
 			Thread snifferThread = new Thread(netSniffer);
 			snifferThread.start();
 
@@ -76,24 +37,18 @@ public class assembler extends methods {
 			Thread assembleThread = new Thread(assemble);
 			assembleThread.start();
 			
-			//start ids
-			Runnable ids = new ids(rule_filename);
-			Thread idsThread = new Thread(ids);
-			idsThread.start();
-			
 			//this checks if the thread is done and removes it from the thread arraylist
 			while(assembleThread.isAlive()){
 				Thread.sleep(1000);
 				check_threads();
-				//final_output();
+				final_output();
 			}
 			//final_output();
 		}
 		
 		else{
-			//new ids(rule_filename,data_filename);
 			//start file sniffer
-			fileSniffer FSniffer = new fileSniffer(data_filename);
+			fileSniffer FSniffer = new fileSniffer("Project2/test.dat");
 			Thread snifferThread = new Thread(FSniffer);
 			snifferThread.start();
 			
@@ -102,25 +57,13 @@ public class assembler extends methods {
 			Thread assembleThread = new Thread(assemble);
 			assembleThread.start();
 			
-			//start ids
-			Runnable ids = new ids(rule_filename);
-			Thread idsThread = new Thread(ids);
-			idsThread.start();
-			
 			//this checks if the thread is done and removes it from the thread arraylist
-			while(assembleThread.isAlive()|| !working_on.isEmpty()){
+			while(assembleThread.isAlive()){
 				Thread.sleep(1000);
 				check_threads();
-				//final_output();
+				final_output();
 			}
 		}
-		
-		
-		/*System.out.println("ip reassem :"+reassembled_packets.toString());
-		System.out.println("arp :"+arp_packets.keySet().toString());
-		System.out.println("analyzed : "+analyzed.toString());
-		System.out.println(completed_fragments.toString());
-		System.out.println("working on:"+ working_on.toString());*/
 	}
 	
 	public static void check_threads(){

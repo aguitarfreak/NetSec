@@ -38,7 +38,8 @@ public class workerThread extends assembler implements Runnable {
 		try { 
             while (!done) {
             	//check to see if timed out
-            	if(!(System.nanoTime() > startTime + ttl*nanofactor)){
+            	if(!(System.nanoTime() > startTime + 5*nanofactor)){
+            		//System.out.println(System.nanoTime()-(startTime + ttl*nanofactor));
 	            	//copy thread specific fragments
 	            	h = (ArrayList<byte[]>) fragments_dict.get(Thread.currentThread().getName().toString());
 	            	if(!h.isEmpty()){
@@ -50,11 +51,14 @@ public class workerThread extends assembler implements Runnable {
             		completed_fragments.put(Thread.currentThread().getName().toString(), h);//this stores all fragments
     				reassembled_packets.put(Thread.currentThread().getName().toString(), first_packet);//this stores reassembled packet
     				sid.put(Thread.currentThread().getName().toString(), 4);
+    				complete.add(Thread.currentThread().getName().toString());
+    				working_on.remove(Thread.currentThread().getName().toString());
             	}
             		
             }
             //add to complete arraylist when done
             complete.add(Thread.currentThread().getName().toString());
+            working_on.remove(Thread.currentThread().getName().toString());
         }  
         catch( InterruptedException e )  {
 			e.printStackTrace();

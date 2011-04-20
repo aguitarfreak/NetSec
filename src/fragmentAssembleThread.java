@@ -48,7 +48,7 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	private void spawn_thread(byte[] P) throws InterruptedException {
 		
 		ethernet Eth = new ethernet(P);
-		//if(verbose)System.out.print("|eth");
+		if(verbose)System.out.print("|eth");
 		
 		if (Eth.packet_type.equals("ip")){
 			
@@ -58,7 +58,7 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 			if(isChecksumCorrect(P)){
 				//check to see if fragmented
 				if(!Ip.fragmented){
-					//if(verbose)System.out.println("Unfragmented packet "+ Ip.identification);
+					if(verbose)System.out.println("Unfragmented packet "+ Ip.identification);
 					if(!complete.contains(Ip.identification)){
 						complete.add(Ip.identification);
 						reassembled_packets.put(Ip.identification,P);

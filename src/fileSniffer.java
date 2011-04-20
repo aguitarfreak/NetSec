@@ -55,7 +55,7 @@ public class fileSniffer extends assembler implements Runnable {
     	 notify(); 
          while ( one_packet.size() == 0 ) 
              wait();
-         byte[] packet = one_packet.get(0); 
+         byte[] packet = one_packet.get(0);
          one_packet.clear();
          return packet; 
     } 
