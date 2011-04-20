@@ -1,0 +1,94 @@
+jolt2packet.dat
+                            IP HEADER                            
+ 0		     1			 2		     3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   4   |   20  |      0x00     |               29              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             0x0455            |  0x1F |          2032         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      255      |      icmp     |             0x136A            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                         192.168.1.200                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          192.168.1.10                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Options/Padding                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+                           ICMP HEADER                           
+ 0		     1			 2		     3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Echo Request |       0       |             0x0000            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             0x0000            |               0               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       ..................                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+
+joltUDP.dat
+                            IP HEADER                            
+ 0		     1			 2		     3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|   4   |   20  |      0x00     |               29              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             0x0455            |  0x1F |          2032         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      255      |      udp      |             0x140E            |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          192.168.1.20                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                          192.168.1.10                         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Options/Padding                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+             UDP HEADER             
+ 0	7 8	15 16	 23 24	  31
++--------+--------+--------+--------+
+|       1235      |        80       |
++--------+--------+--------+--------+
+|        9        |      0x0000     |
++--------+--------+--------+--------+
+|         a.................        |
++--------+--------+--------+--------+
+
+The Ping of Death / Jolt attacks
+The "ping of death" is one of the earliest layer 3/4 attacks. One of the simplest ways to execute it is to run "ping -l 65510 1.2.3.4" on a Windows system where 1.2.3.4 is the IP address of the intended victim. "Jolt" is simply a purpose-written program for generating such packets on operating systems whose ping commands refuse to generate oversized packets.
+
+The triggering factor is that the last fragment makes the total packet size exceed 65535 bytes, which is the highest number that a 16-bit integer can store. When the value overflows, it jumps back to a very small number. What happens then is a function of how well the victim's IP stack is implemented.
+
+Clavister Security Gateway will never allow fragments through that would result in the total size exceeding 65535 bytes. In addition to that, there are configurable limits for IP packet sizes in the "Advanced Settings" section. The largest default value is for UDP: 60000 bytes.
+
+Ping of death will show up in Clavister Security Gateway logs as drops with the rule name set to "LogOversizedPackets". The sender IP address may be spoofed.
+
+Fragmentation overlap attacks: Teardrop / Bonk / Boink / Nestea
+Teardrop and its followers are fragment overlap attack. Many IP stacks have shown erratic behavior (excessive resource exhaustion or crashes) when exposed to overlapping fragments.
+
+Clavister Security Gateway protects fully against fragmentation overlap attacks. Overlapping fragments are never allowed to pass through the Security Gateway.
+
+Teardrop and its followers will show up in Clavister Security Gateway logs as drops with the rule name set to "IllegalFrags". The sender IP address may be spoofed.
+
+The WinNuke attack
+The WinNuke attack works by connecting to a TCP service that does not have handlers for "out-of-band" data (TCP segments with the URG bit set), but still accepts such data. This will usually put the service in a tight loop that consumes all available CPU time.
+
+One such service was the NetBIOS over TCP/IP service on Windows machines, which gave the attack its name.
+
+Clavister Security Gateway protects against this in two ways:
+
+    With a careful inbound policy, the attack surface is greatly reduced. Only exposed services could possibly become victims to the attack, and public services tend to be more well-written than services expected to only serve the local network.
+    By stripping the URG bit by default from all TCP segments traversing the Security Gateway (configurable via Advanced Settings -> TCP -> TCPUrg). 
+
+
+WinNuke attacks will usually show up in Clavister Security Gateway logs as normal drops with the name of the rule in your policy that disallowed the connection attempt. For connections allowed through the Security Gateway, "TCP" or "DROP" category (depending on the TCPUrg setting) entries will appear, with a rule name of "TCPUrg". The sender IP address is not likely to be spoofed; a full three-way handshake must be completed before out-of-band segments can be sent.
+
+The Jolt2 attack
+The Jolt2 attack works by sending a steady stream of identical fragments at the victim machine. A few hundred packets per second will freeze vulnerable machines completely until the stream is ended.
+
+Clavister Security Gateway will protect completely against this attack. The first fragment will be enqueued, waiting for earlier fragments to arrive so that they may be passed on in order, but this never happens, so not even the first fragment gets through. Subsequent fragments will be thrown away as they are identical to the first fragment.
+
+If the attacker chooses a fragment offset higher than the limits imposed by Advanced Settings -> LengthLim, the packets will not even get that far; they will be dropped immediately.
+
+Jolt2 attacks may or may not show up in Clavister Security Gateway logs. If the attacker chooses a too-high fragment offset for the attack, they will show up as drops with the rule set to "LogOversizedPackets". If the fragment offset is low enough, no logging will occur. The sender IP address may be spoofed.
+

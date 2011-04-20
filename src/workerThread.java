@@ -38,7 +38,7 @@ public class workerThread extends assembler implements Runnable {
 		try { 
             while (!done) {
             	//check to see if timed out
-            	if(!(System.nanoTime() > startTime + 5*nanofactor)){
+            	if(!(System.nanoTime() > startTime + 2*nanofactor)){
             		//System.out.println(System.nanoTime()-(startTime + ttl*nanofactor));
 	            	//copy thread specific fragments
 	            	h = (ArrayList<byte[]>) fragments_dict.get(Thread.currentThread().getName().toString());
@@ -51,8 +51,9 @@ public class workerThread extends assembler implements Runnable {
             		completed_fragments.put(Thread.currentThread().getName().toString(), h);//this stores all fragments
     				reassembled_packets.put(Thread.currentThread().getName().toString(), first_packet);//this stores reassembled packet
     				sid.put(Thread.currentThread().getName().toString(), 4);
-    				complete.add(Thread.currentThread().getName().toString());
-    				working_on.remove(Thread.currentThread().getName().toString());
+    				//complete.add(Thread.currentThread().getName().toString());
+    				//working_on.remove(Thread.currentThread().getName().toString());
+    				done=true;
             	}
             		
             }
@@ -91,7 +92,6 @@ public class workerThread extends assembler implements Runnable {
 		if(found_last){
 			for(int idx = 0; idx<H.size(); idx++){
 				IP = new ip(H.get(idx));
-				
 				//check for IP segment larger than 64k
 				if(!large_ip_seg){
 					if(IP.total_length>64){
@@ -107,7 +107,9 @@ public class workerThread extends assembler implements Runnable {
 				pl = IP.fragment_offset + dl;
 				
 				copy_to_reassembled(H.get(idx),IP.fragment_offset,pl);
-				done();
+				
+				if(!done)
+					done();
 			}
 		}
 	}
@@ -116,13 +118,21 @@ public class workerThread extends assembler implements Runnable {
 	public synchronized void copy_to_reassembled(byte[] data, int start_idx, int end_idx){
 		int j = 0;
 		for(int m = start_idx; m<end_idx; m++){
-			//if it has been overwritten
-			if(reassembled_bools[m]){
-				overwritten = true;
+			try{
+				//if it has been overwritten
+				if(reassembled_bools[m]){
+					overwritten = true;
+				}
+				reassembled[m] = data[ip_payload_start+j];
+				reassembled_bools[m] = true;
+				j++;
+			//catch for teardrop attack	
+			}catch(ArrayIndexOutOfBoundsException e){
+				completed_fragments.put(Thread.currentThread().getName().toString(), h);
+				reassembled_packets.put(Thread.currentThread().getName().toString(), first_packet);
+				sid.put(Thread.currentThread().getName().toString(), 6);
+				done = true;
 			}
-			reassembled[m] = data[ip_payload_start+j];
-			reassembled_bools[m] = true;
-			j++;
 		}
 	}
 	

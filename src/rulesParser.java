@@ -21,33 +21,36 @@ public class rulesParser {
 		int rule_num = 0;
 		
 		while ((nextLine = reader.readNext()) != null) {
-			if(nextLine.length<8){
-				System.out.println("Problem parsing rule " + (rule_num+1) + ". Not enought parameters specified!");
-				System.exit(1);
+			//can use # to comment out the rules in the rule file
+			if(!nextLine[0].startsWith("#")){
+				if(nextLine.length<8){
+					System.out.println("Problem parsing rule " + (rule_num+1) + ". Not enought parameters specified!");
+					System.exit(1);
+				}
+				RULES.put(new Integer(rule_num), new HashMap<String,String>());
+				
+				for(int i = 0; i<7; i++){
+					RULES.get(rule_num).put(fields[i], nextLine[i]);
+				}
+				
+				String options = nextLine[7];
+				
+				options = options.replace(")", "");
+				options = options.replace("(", "");
+				
+				StringTokenizer options_t = new StringTokenizer(options);
+				
+				while (options_t.hasMoreElements()){
+				      options_t.nextToken();
+				      List<String> option_list = Arrays.asList(options.split(";"));
+				      for(int i = 0; i<option_list.size();i++){
+				    	  String opt = option_list.get(i).split(":")[0];
+				    	  String val = option_list.get(i).split(":")[1];
+				    	  RULES.get(rule_num).put(opt, val);
+				      }
+				}
+				rule_num++;
 			}
-			RULES.put(new Integer(rule_num), new HashMap<String,String>());
-			
-			for(int i = 0; i<7; i++){
-				RULES.get(rule_num).put(fields[i], nextLine[i]);
-			}
-			
-			String options = nextLine[7];
-			
-			options = options.replace(")", "");
-			options = options.replace("(", "");
-			
-			StringTokenizer options_t = new StringTokenizer(options);
-			
-			while (options_t.hasMoreElements()){
-			      options_t.nextToken();
-			      List<String> option_list = Arrays.asList(options.split(";"));
-			      for(int i = 0; i<option_list.size();i++){
-			    	  String opt = option_list.get(i).split(":")[0];
-			    	  String val = option_list.get(i).split(":")[1];
-			    	  RULES.get(rule_num).put(opt, val);
-			      }
-			}
-			rule_num++;
 		}
 	}
 	

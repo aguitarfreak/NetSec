@@ -113,8 +113,9 @@ public class assembler extends methods {
 				check_threads();
 				//final_output();
 			}
+			
 		}
-		
+		//final_output();
 		
 		/*System.out.println("ip reassem :"+reassembled_packets.toString());
 		System.out.println("arp :"+arp_packets.keySet().toString());
@@ -170,7 +171,7 @@ public class assembler extends methods {
 				
 				int x = 0;
 				for(byte[] frags : completed_fragments.get(key)){
-					System.out.print("Partially Processed Fragment "+ x +" : ");
+					System.out.println("Partially Processed Fragment "+ x +" : ");
 					System.out.println(driver.byteArrayToString(frags));
 					x++;
 				}
@@ -181,6 +182,21 @@ public class assembler extends methods {
 				System.out.print(" , Sid : "+5);
 				System.out.println(" , Unfragmented Packet : ");
 				System.out.println(driver.byteArrayToString(reassembled_packets.get(key)));
+				
+				print_divider();
+			}
+			else if(sid.get(key)==6){
+				System.out.print(" , Sid : "+6);
+				System.out.println(" , Teardrop Attack  ");
+				System.out.println("Partially Reassembled Packet : ");
+				System.out.println(driver.byteArrayToString(reassembled_packets.get(key)));
+				
+				int x = 0;
+				for(byte[] frags : completed_fragments.get(key)){
+					System.out.println("Partially Processed Fragment "+ x +" : ");
+					System.out.println(driver.byteArrayToString(frags));
+					x++;
+				}
 				
 				print_divider();
 			}

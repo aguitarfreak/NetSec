@@ -46,7 +46,6 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	}
 
 	private void spawn_thread(byte[] P) throws InterruptedException {
-		
 		ethernet Eth = new ethernet(P);
 		if(verbose)System.out.print("|eth");
 		

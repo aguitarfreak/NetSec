@@ -53,7 +53,7 @@ public class methods{
 	}
 	
 	//print adapter names
-	public void print_adapter_names(){
+	public static void print_adapter_names(){
 		String[] adapters = driver.getAdapterNames();
 		System.out.println("Number of adapters: " + adapters.length);
 		//Print adapter names
