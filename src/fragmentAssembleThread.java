@@ -8,13 +8,16 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	int packetCount;
 	boolean verbose = false;
 	int arp_count = 0;
+	DateUtils timestamp;
 	
 	fragmentAssembleThread(networkSniffer n){
 		netSniffer = n;
+		timestamp = new DateUtils();
 	}
 	
 	fragmentAssembleThread(fileSniffer f){
 		fSniffer = f;
+		timestamp = new DateUtils();
 	}
 
 	public void run() {
