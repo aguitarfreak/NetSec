@@ -8,16 +8,15 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	int packetCount;
 	boolean verbose = false;
 	int arp_count = 0;
-	DateUtils timestamp;
+	DateUtils timestamp = new DateUtils();
+	String timeformat = "yyyy.MMMMM.dd 'at' hh:mm aaa";
 	
 	fragmentAssembleThread(networkSniffer n){
 		netSniffer = n;
-		timestamp = new DateUtils();
 	}
 	
 	fragmentAssembleThread(fileSniffer f){
 		fSniffer = f;
-		timestamp = new DateUtils();
 	}
 
 	public void run() {
@@ -29,7 +28,7 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	                all_packets.add(p);
 	                for (int i= 0; i<all_packets.size(); i++){
 	                	 spawn_thread(all_packets.get(i));
-	                	 Thread.sleep( 100 ); 
+	                	 Thread.sleep( 1000 ); 
 	                }
 	            }
 			}
@@ -40,7 +39,7 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	                all_packets.add(p);
 	                for (int i= 0; i<all_packets.size(); i++){
 	                	 spawn_thread(all_packets.get(i));
-	                	 Thread.sleep( 100 ); 
+	                	 Thread.sleep( 1000 ); 
 	                }
 	            }
 			}
@@ -49,12 +48,18 @@ public class fragmentAssembleThread extends assembler implements Runnable {
 	}
 
 	private void spawn_thread(byte[] P) throws InterruptedException {
+		
+		
 		ethernet Eth = new ethernet(P);
 		if(verbose)System.out.print("|eth");
 		
 		if (Eth.packet_type.equals("ip")){
 			
 			ip Ip = new ip(P);
+			
+			if(!timestamped_packets.containsKey(Ip.identification)){
+				timestamped_packets.put(Ip.identification, timestamp.now(timeformat));
+			}
 			
 			//check checksum
 			if(isChecksumCorrect(P)){

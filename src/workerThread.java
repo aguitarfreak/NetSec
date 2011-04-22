@@ -76,6 +76,13 @@ public class workerThread extends assembler implements Runnable {
 				tl = IP.total_length;
 				dl = tl - IP.header_length;
 				pl = IP.fragment_offset + dl;
+				//System.out.println(IP.fragment_offset);
+				if(pl+ip_header_length+ethernet_header_length > 65535){
+					completed_fragments.put(Thread.currentThread().getName().toString(), h);
+					reassembled_packets.put(Thread.currentThread().getName().toString(), first_packet);
+					sid.put(Thread.currentThread().getName().toString(), 7);
+					done = true;
+				}
 				
 				reassembled = new byte[pl];//includes IP header(8 bytes)
 				reassembled_bools = new boolean[pl];

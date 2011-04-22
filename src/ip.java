@@ -11,7 +11,8 @@ public class ip extends ethernet{
 	private int total_length_idx= 16;//Total Length(16-17)
 	private int identification_idx=18; //(18-19)
 	private int flags_idx=20;//(20)
-	private int fragment_offset_idx=21;//(20-21)
+	//private int fragment_offset_idx=21;//(20-21)
+	private int fragment_offset_idx=20;//(20-21)
 	private int time_to_live_idx=22;//(22)
 	private int protocol_idx = 23;//(23)
 	private int header_chksm_idx = 24;//(24-25)
@@ -46,12 +47,16 @@ public class ip extends ethernet{
 		header_length = (array[ver_idx]&0x0F)*4;
 		type_of_service = "0x"+driver.byteToHex(array[type_of_service_idx]);
 		total_length = (array[total_length_idx]&0xff)+(array[total_length_idx+1]&0xFF);
-		identification = "0x"+driver.byteToHex(array[identification_idx])+
+		identification = driver.byteToHex(array[identification_idx])+
 							driver.byteToHex(array[identification_idx+1]);
 		flags="0x"+driver.byteToHex(array[flags_idx]);
 		
-		fragment_offset = (array[fragment_offset_idx]&0xFF)*8;
-		
+		//fragment_offset = (array[fragment_offset_idx]&0xFF)*8;
+		String offset_hex = driver.byteToHex(array[fragment_offset_idx]) + driver.byteToHex(array[fragment_offset_idx+1]);
+		fragment_offset = (int) ((Math.pow(16, 3)*Character.getNumericValue(offset_hex.charAt(0)) +
+								(Math.pow(16, 2)*Character.getNumericValue(offset_hex.charAt(1)) +
+								(Math.pow(16, 1)*Character.getNumericValue(offset_hex.charAt(2)) +
+								(Math.pow(16, 0)*Character.getNumericValue(offset_hex.charAt(3)))))))*8;
 		//check flags and offset fields to determine if the packet is fragmented
 		//if more fragment is set or fragment offset is not 0--> fragmented
 		if((is_bit_set(array[flags_idx],5))||(fragment_offset!=0)){

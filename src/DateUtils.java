@@ -4,14 +4,13 @@ import java.text.SimpleDateFormat;
 public class DateUtils {
 
 
-  public static String now(String dateFormat) {
+  public String now(String dateFormat) {
     Calendar cal = Calendar.getInstance();
     SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
     return sdf.format(cal.getTime());
-
   }
 
-  /*public static void  main(String arg[]) {
+ /* public static void  main(String arg[]) {
      System.out.println(DateUtils.now("dd MMMMM yyyy"));
      System.out.println(DateUtils.now("yyyyMMdd"));
      System.out.println(DateUtils.now("dd.MM.yy"));
@@ -21,6 +20,6 @@ public class DateUtils {
      System.out.println(DateUtils.now("h:mm a"));
      System.out.println(DateUtils.now("H:mm:ss:SSS"));
      System.out.println(DateUtils.now("K:mm a,z"));
-     System.out.println(DateUtils.now("yyyy.MMMMM.dd GGG hh:mm aaa"));
+     System.out.println(DateUtils.now("yyyy.MMMMM.dd 'at' hh:mm aaa"));
   }*/
 }
